@@ -38,12 +38,20 @@ return [
             'errorAction' => 'site/error',
         ],
 
-        'urlManager' => [
-            'enablePrettyUrl' => true,
-            'showScriptName' => false,
+        'backendUrlManager' => require __DIR__ . '/urlManager.php',
+        'frontendUrlManager' => require __DIR__ . '/../../frontend/config/urlManager.php',
+        'urlManager' => function(){
+            return Yii::$app->get('backendUrlManager');
+        },
+
+        'as access' => [
+            'class' => 'yii\filters\AccessControl',
+            'except' => ['site/login', 'site/error'],
             'rules' => [
-                '' => 'site/index',
-                '<controller:\w+>/<action:\w+>/' => '<controller>/<action>',
+                [
+                    'allow' => true,
+                    'roles' => ['@'],
+                ],
             ],
         ],
 
