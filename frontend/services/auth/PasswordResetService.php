@@ -1,4 +1,5 @@
 <?php
+
 namespace frontend\services\auth;
 
 use common\entities\User;
@@ -8,6 +9,13 @@ use Yii;
 
 class PasswordResetService
 {
+    private $supportEmail;
+
+    public function __construct($supportEmail)
+    {
+        $this->supportEmail = $supportEmail;
+    }
+
     public function request(PasswordResetRequestForm $form): void
     {
         /* @var $user User */
@@ -28,7 +36,7 @@ class PasswordResetService
                 ['html' => 'passwordResetToken-html', 'text' => 'passwordResetToken-text'],
                 ['user' => $user]
             )
-            ->setFrom([Yii::$app->params['supportEmail'] => Yii::$app->name . ' robot'])
+            ->setFrom($this->supportEmail)
             ->setTo($user->email)
             ->setSubject('Password reset for ' . Yii::$app->name)
             ->send();
@@ -58,5 +66,4 @@ class PasswordResetService
             throw new \RuntimeException('Saving error.');
         }
     }
-
 }
