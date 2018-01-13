@@ -8,7 +8,7 @@
 
 namespace frontend\services\auth;
 use common\entities\User;
-use frontend\forms\SignupForm
+use frontend\forms\SignupForm;
 
 
 class SignupService
