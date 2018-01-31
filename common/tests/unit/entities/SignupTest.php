@@ -1,6 +1,6 @@
 <?php
 
-use common\entities\User;
+use shop\entities\User;
 use Codeception\Test\Unit;
 
 class SignupTest extends Unit

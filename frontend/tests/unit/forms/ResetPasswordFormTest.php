@@ -3,7 +3,7 @@
 namespace frontend\tests\unit\forms;
 
 use common\fixtures\UserFixture;
-use frontend\forms\ResetPasswordForm;
+use shop\forms\auth\ResetPasswordForm;
 
 class ResetPasswordFormTest extends \Codeception\Test\Unit
 {
@@ -26,7 +26,7 @@ class ResetPasswordFormTest extends \Codeception\Test\Unit
     public function testWrongToken()
     {
         $this->tester->expectException('yii\base\InvalidParamException', function() {
-            new ResetPasswordForm('');
+            new \shop\forms\auth\ResetPasswordForm('');
         });
 
         $this->tester->expectException('yii\base\InvalidParamException', function() {

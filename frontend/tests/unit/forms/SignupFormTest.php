@@ -1,7 +1,7 @@
 <?php
 namespace frontend\tests\unit\forms;
 use common\fixtures\UserFixture;
-use frontend\forms\SignupForm;
+use shop\forms\auth\SignupForm;
 class SignupFormTest extends \Codeception\Test\Unit
 {
     /**
@@ -19,7 +19,7 @@ class SignupFormTest extends \Codeception\Test\Unit
     }
     public function testCorrectSignup()
     {
-        $model = new SignupForm([
+        $model = new \shop\forms\auth\SignupForm([
             'username' => 'some_username',
             'email' => 'some_email@example.com',
             'password' => 'some_password',
@@ -28,7 +28,7 @@ class SignupFormTest extends \Codeception\Test\Unit
     }
     public function testNotCorrectSignup()
     {
-        $model = new SignupForm([
+        $model = new \shop\forms\auth\SignupForm([
             'username' => 'troy.becker',
             'email' => 'nicolas.dianna@hotmail.com',
             'password' => 'some_password',

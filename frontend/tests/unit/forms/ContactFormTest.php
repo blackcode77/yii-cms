@@ -1,13 +1,13 @@
 <?php
 namespace frontend\tests\unit\forms;
 
-use frontend\forms\ContactForm;
+use shop\forms\ContactForm;
 
 class ContactFormTest extends \Codeception\Test\Unit
 {
     public function testSuccess()
     {
-        $model = new ContactForm();
+        $model = new \shop\forms\ContactForm();
 
         $model->attributes = [
             'name' => 'Tester',
