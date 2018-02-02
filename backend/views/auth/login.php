@@ -4,7 +4,7 @@ use yii\bootstrap\ActiveForm;
 
 /* @var $this yii\web\View */
 /* @var $form yii\bootstrap\ActiveForm */
-/* @var $model \common\models\LoginForm */
+/* @var $model \shop\forms\auth\LoginForm */
 
 $this->title = 'Sign In';
 
@@ -54,7 +54,7 @@ $fieldOptions2 = [
         <?php ActiveForm::end(); ?>
 
         <a href="#">I forgot my password</a><br>
-        <a href="register.html" class="text-center">Register a new membership</a>
+        <a href="../../web/index.php" class="text-center">Register a new membership</a>
 
     </div>
     <!-- /.login-box-body -->

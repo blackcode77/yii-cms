@@ -19,7 +19,7 @@ class PasswordResetService
         $this->users = $users;
     }
 
-    public function request(PasswordResetRequestForm $form)
+    public function request(PasswordResetRequestForm $form): void
     {
         $user = $this->users->getByEmail($form->email);
 
@@ -32,7 +32,7 @@ class PasswordResetService
 
         $sent = $this->mailer
             ->compose(
-                ['html' => 'passwordResetToken-html', 'text' => 'passwordResetToken-text'],
+                ['html' => 'auth/reset/confirm-html', 'text' => 'auth/reset/confirm-text'],
                 ['user' => $user]
             )
             ->setTo($user->email)
@@ -44,7 +44,7 @@ class PasswordResetService
         }
     }
 
-    public function validateToken($token)
+    public function validateToken($token): void
     {
         if (empty($token) || !is_string($token)) {
             throw new \DomainException('Password reset token cannot be blank.');
@@ -54,7 +54,7 @@ class PasswordResetService
         }
     }
 
-    public function reset(string $token, ResetPasswordForm $form)
+    public function reset(string $token, ResetPasswordForm $form): void
     {
         $user = $this->users->getByPasswordResetToken($token);
         $user->resetPassword($form->password);
