@@ -37,6 +37,11 @@ class UserRepository
         return (bool) User::findByPasswordResetToken($token);
     }
 
+    public function get($id): User
+    {
+        return $this->getBy(['id' => $id]);
+    }
+
     public function save(User $user)
     {
         if (!$user->save()) {
