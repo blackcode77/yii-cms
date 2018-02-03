@@ -18,7 +18,7 @@ class SignupService
         $this->users = $users;
     }
 
-    public function signup(SignupForm $form): void
+    public function signup(SignupForm $form)
     {
         $user = User::requestSignup(
             $form->username,
@@ -40,7 +40,7 @@ class SignupService
         }
     }
 
-    public function confirm($token): void
+    public function confirm($token)
     {
         if (empty($token)) {
             throw new \DomainException('Empty confirm token.');
