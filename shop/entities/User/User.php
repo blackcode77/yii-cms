@@ -44,6 +44,13 @@ class User extends ActiveRecord implements IdentityInterface
         return $user;
     }
 
+    public function edit(string $username, string $email)
+    {
+        $this->username = $username;
+        $this->email = $email;
+        $this->updated_at = time();
+    }
+
     public static function create(string $username, string $email, string $password): self
     {
         $user = new User();
@@ -68,7 +75,7 @@ class User extends ActiveRecord implements IdentityInterface
         $this->networks = $networks;
     }
 
-    public function confirmSignup(): void
+    public function confirmSignup()
     {
         if (!$this->isWait()) {
             throw new \DomainException('User is already active.');
@@ -87,7 +94,7 @@ class User extends ActiveRecord implements IdentityInterface
         return $user;
     }
 
-    public function requestPasswordReset(): void
+    public function requestPasswordReset()
     {
         if (!empty($this->password_reset_token) && self::isPasswordResetTokenValid($this->password_reset_token)) {
             throw new \DomainException('Password resetting is already requested.');
@@ -95,7 +102,7 @@ class User extends ActiveRecord implements IdentityInterface
         $this->password_reset_token = Yii::$app->security->generateRandomString() . '_' . time();
     }
 
-    public function resetPassword($password): void
+    public function resetPassword($password)
     {
         if (empty($this->password_reset_token)) {
             throw new \DomainException('Password resetting is not requested.');
