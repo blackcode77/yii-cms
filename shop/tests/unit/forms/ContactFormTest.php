@@ -1,5 +1,5 @@
 <?php
-namespace frontend\tests\unit\forms;
+namespace shop\tests\unit\forms;
 
 use shop\forms\ContactForm;
 
@@ -7,7 +7,7 @@ class ContactFormTest extends \Codeception\Test\Unit
 {
     public function testSuccess()
     {
-        $model = new \shop\forms\ContactForm();
+        $model = new ContactForm();
 
         $model->attributes = [
             'name' => 'Tester',
@@ -16,6 +16,6 @@ class ContactFormTest extends \Codeception\Test\Unit
             'body' => 'body of current message',
         ];
 
-        expect_that($model->validate());
+        expect_that($model->validate(['name', 'email', 'subject', 'body']));
     }
 }

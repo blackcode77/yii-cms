@@ -1,13 +1,17 @@
 <?php
-namespace frontend\tests\unit\forms;
+namespace shop\tests\unit\forms;
+
 use common\fixtures\UserFixture;
 use shop\forms\auth\SignupForm;
+
 class SignupFormTest extends \Codeception\Test\Unit
 {
     /**
      * @var \frontend\tests\UnitTester
      */
     protected $tester;
+
+
     public function _before()
     {
         $this->tester->haveFixtures([
@@ -17,25 +21,30 @@ class SignupFormTest extends \Codeception\Test\Unit
             ]
         ]);
     }
+
     public function testCorrectSignup()
     {
-        $model = new \shop\forms\auth\SignupForm([
+        $model = new SignupForm([
             'username' => 'some_username',
             'email' => 'some_email@example.com',
             'password' => 'some_password',
         ]);
+
         expect_that($model->validate());
     }
+
     public function testNotCorrectSignup()
     {
-        $model = new \shop\forms\auth\SignupForm([
+        $model = new SignupForm([
             'username' => 'troy.becker',
             'email' => 'nicolas.dianna@hotmail.com',
             'password' => 'some_password',
         ]);
+
         expect_not($model->validate());
         expect_that($model->getErrors('username'));
         expect_that($model->getErrors('email'));
+
         expect($model->getFirstError('username'))
             ->equals('This username has already been taken.');
         expect($model->getFirstError('email'))

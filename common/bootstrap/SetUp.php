@@ -17,6 +17,7 @@ class SetUp implements BootstrapInterface
         });
 
         $container->setSingleton(ContactService::class, [], [
+
             $app->params['adminEmail']
         ]);
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace frontend\tests\unit\forms;
+namespace shop\tests\unit\forms;
 
 use Yii;
 use shop\forms\auth\PasswordResetRequestForm;
@@ -27,7 +27,7 @@ class PasswordResetRequestFormTest extends \Codeception\Test\Unit
 
     public function testWithWrongEmailAddress()
     {
-        $model = new \shop\forms\auth\PasswordResetRequestForm();
+        $model = new PasswordResetRequestForm();
         $model->email = 'not-existing-email@example.com';
         expect_not($model->validate());
     }
@@ -43,7 +43,7 @@ class PasswordResetRequestFormTest extends \Codeception\Test\Unit
     public function testSuccessfully()
     {
         $userFixture = $this->tester->grabFixture('user', 0);
-
+        
         $model = new PasswordResetRequestForm();
         $model->email = $userFixture['email'];
         $user = User::findOne(['password_reset_token' => $userFixture['password_reset_token']]);
