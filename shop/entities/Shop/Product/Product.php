@@ -2,6 +2,7 @@
 
 namespace shop\entities\Shop\Product;
 
+use lhs\Yii2SaveRelationsBehavior\SaveRelationsBehavior;
 use shop\entities\behaviors\MetaBehavior;
 use shop\entities\Meta;
 use shop\entities\Shop\Brand;
@@ -23,6 +24,7 @@ use yii\db\ActiveRecord;
  * @property Meta $meta
  * @property Brand $brand
  * @property Category $category
+ * @property CategoryAssignment[] $categoryAssignments
  */
 class Product extends ActiveRecord
 {
@@ -40,10 +42,44 @@ class Product extends ActiveRecord
         return $product;
     }
 
-    public function setPrice($new, $old): void
+    public function setPrice($new, $old)
     {
         $this->price_new = $new;
         $this->price_old = $old;
+    }
+    public function changeMainCategory($categoryId)
+    {
+        $this->category_id = $categoryId;
+    }
+
+    public function assignCategory($id)
+    {
+        $assignments = $this->categoryAssignments;
+        foreach ($assignments as $assignment) {
+            if ($assignment->isForCategory($id)) {
+                return;
+            }
+        }
+        $assignments[] = CategoryAssignment::create($id);
+        $this->categoryAssignments = $assignments;
+    }
+
+    public function revokeCategory($id)
+    {
+        $assignments = $this->categoryAssignments;
+        foreach ($assignments as $i => $assignment) {
+            if ($assignment->isForCategory($id)) {
+                unset($assignments[$i]);
+                $this->categoryAssignments = $assignments;
+                return;
+            }
+        }
+        throw new \DomainException('Assignment is not found.');
+    }
+
+    public function revokeCategories()
+    {
+        $this->categoryAssignments = [];
     }
 
     ##########################
@@ -58,6 +94,11 @@ class Product extends ActiveRecord
         return $this->hasOne(Category::class, ['id' => 'category_id']);
     }
 
+    public function getCategoryAssignments(): ActiveQuery
+    {
+        return $this->hasMany(CategoryAssignment::class, ['product_id' => 'id']);
+    }
+
     ##########################
 
     public static function tableName(): string
@@ -69,6 +110,17 @@ class Product extends ActiveRecord
     {
         return [
             MetaBehavior::className(),
+            [
+                'class' => SaveRelationsBehavior::className(),
+                'relations' => ['categoryAssignments'],
+            ],
+        ];
+    }
+
+    public function transactions()
+    {
+        return [
+            self::SCENARIO_DEFAULT => self::OP_ALL,
         ];
     }
 }
