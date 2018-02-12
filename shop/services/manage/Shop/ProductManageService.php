@@ -8,6 +8,7 @@ use shop\entities\Shop\Tag;
 use shop\forms\manage\Shop\Product\CategoriesForm;
 use shop\forms\manage\Shop\Product\PhotosForm;
 use shop\forms\manage\Shop\Product\ProductCreateForm;
+use shop\forms\manage\Shop\Product\ModificationForm;
 use shop\forms\manage\Shop\Product\ProductEditForm;
 use shop\repositories\Shop\BrandRepository;
 use shop\repositories\Shop\CategoryRepository;
@@ -184,6 +185,36 @@ class ProductManageService
         $product = $this->products->get($id);
         $other = $this->products->get($otherId);
         $product->revokeRelatedProduct($other->id);
+        $this->products->save($product);
+    }
+
+    public function addModification($id, ModificationForm $form)
+    {
+        $product = $this->products->get($id);
+        $product->addModification(
+            $form->code,
+            $form->name,
+            $form->price
+        );
+        $this->products->save($product);
+    }
+
+    public function editModification($id, $modificationId, ModificationForm $form)
+    {
+        $product = $this->products->get($id);
+        $product->editModification(
+            $modificationId,
+            $form->code,
+            $form->name,
+            $form->price
+        );
+        $this->products->save($product);
+    }
+
+    public function removeModification($id, $modificationId)
+    {
+        $product = $this->products->get($id);
+        $product->removeModification($modificationId);
         $this->products->save($product);
     }
 
