@@ -24,6 +24,7 @@ use yii\web\UploadedFile;
  *
  * @property TagAssignment[] $tagAssignments
  * @property Meta $meta
+ * @property RelatedAssignment[] $relatedAssignments
  * @property Brand $brand
  * @property Category $category
  * @property CategoryAssignment[] $categoryAssignments
@@ -147,6 +148,33 @@ class Product extends ActiveRecord
         $this->tagAssignments = [];
     }
 
+    // Related products
+
+    public function assignRelatedProduct($id)
+    {
+        $assignments = $this->relatedAssignments;
+        foreach ($assignments as $assignment) {
+            if ($assignment->isForProduct($id)) {
+                return;
+            }
+        }
+        $assignments[] = RelatedAssignment::create($id);
+        $this->relatedAssignments = $assignments;
+    }
+
+    public function revokeRelatedProduct($id)
+    {
+        $assignments = $this->relatedAssignments;
+        foreach ($assignments as $i => $assignment) {
+            if ($assignment->isForProduct($id)) {
+                unset($assignments[$i]);
+                $this->relatedAssignments = $assignments;
+                return;
+            }
+        }
+        throw new \DomainException('Assignment is not found.');
+    }
+
     // Photos
 
     public function addPhoto(UploadedFile $file)
@@ -247,6 +275,11 @@ class Product extends ActiveRecord
         return $this->hasMany(TagAssignment::class, ['product_id' => 'id']);
     }
 
+    public function getRelatedAssignments(): ActiveQuery
+    {
+        return $this->hasMany(RelatedAssignment::class, ['product_id' => 'id']);
+    }
+
     ##########################
 
     public static function tableName(): string
@@ -260,7 +293,7 @@ class Product extends ActiveRecord
             MetaBehavior::className(),
             [
                 'class' => SaveRelationsBehavior::className(),
-                'relations' => ['categoryAssignments', 'values', 'photos', 'tagAssignments'],
+                'relations' => ['categoryAssignments', 'values', 'photos', 'tagAssignments', 'relatedAssignments'],
             ],
         ];
     }
