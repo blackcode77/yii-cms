@@ -9,6 +9,7 @@ use shop\entities\Shop\Brand;
 use shop\entities\Shop\Category;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
+use yii\web\UploadedFile;
 
 /**
  * @property integer $id
@@ -26,6 +27,7 @@ use yii\db\ActiveRecord;
  * @property Category $category
  * @property CategoryAssignment[] $categoryAssignments
  * @property Value[] $values
+ * @property Photo[] $photos
  */
 class Product extends ActiveRecord
 {
@@ -34,6 +36,7 @@ class Product extends ActiveRecord
     public static function create($brandId, $categoryId, $code, $name, Meta $meta): self
     {
         $product = new static();
+        $product->brand_id = $brandId;
         $product->brand_id = $brandId;
         $product->category_id = $categoryId;
         $product->code = $code;
@@ -111,6 +114,74 @@ class Product extends ActiveRecord
         $this->categoryAssignments = [];
     }
 
+    // Photos
+
+    public function addPhoto(UploadedFile $file)
+    {
+        $photos = $this->photos;
+        $photos[] = Photo::create($file);
+        $this->updatePhotos($photos);
+    }
+
+    public function removePhoto($id)
+    {
+        $photos = $this->photos;
+        foreach ($photos as $i => $photo) {
+            if ($photo->isIdEqualTo($id)) {
+                unset($photos[$i]);
+                $this->updatePhotos($photos);
+                return;
+            }
+        }
+        throw new \DomainException('Photo is not found.');
+    }
+
+    public function removePhotos()
+    {
+        $this->updatePhotos([]);
+    }
+
+    public function movePhotoUp($id)
+    {
+        $photos = $this->photos;
+        foreach ($photos as $i => $photo) {
+            if ($photo->isIdEqualTo($id)) {
+                if ($prev = $photos[$i - 1] ?? null) {
+                    $photos[$i - 1] = $photo;
+                    $photos[$i] = $prev;
+                    $this->updatePhotos($photos);
+                }
+                return;
+            }
+        }
+        throw new \DomainException('Photo is not found.');
+    }
+
+    public function movePhotoDown($id)
+    {
+        $photos = $this->photos;
+        foreach ($photos as $i => $photo) {
+            if ($photo->isIdEqualTo($id)) {
+                if ($next = $photos[$i + 1] ?? null) {
+                    $photos[$i] = $next;
+                    $photos[$i + 1] = $photo;
+                    $this->updatePhotos($photos);
+                }
+                return;
+            }
+        }
+        throw new \DomainException('Photo is not found.');
+    }
+
+    private function updatePhotos(array $photos)
+    {
+        foreach ($photos as $i => $photo) {
+            $photo->setSort($i);
+        }
+        $this->photos = $photos;
+    }
+
+
     ##########################
 
     public function getBrand(): ActiveQuery
@@ -133,6 +204,11 @@ class Product extends ActiveRecord
         return $this->hasMany(Value::class, ['product_id' => 'id']);
     }
 
+    public function getPhotos(): ActiveQuery
+    {
+        return $this->hasMany(Photo::class, ['product_id' => 'id'])->orderBy('sort');
+    }
+
     ##########################
 
     public static function tableName(): string
@@ -146,7 +222,7 @@ class Product extends ActiveRecord
             MetaBehavior::className(),
             [
                 'class' => SaveRelationsBehavior::className(),
-                'relations' => ['categoryAssignments', 'values'],
+                'relations' => ['categoryAssignments', 'values', 'photos'],
             ],
         ];
     }

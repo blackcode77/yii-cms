@@ -6,6 +6,7 @@ use shop\entities\Meta;
 use shop\entities\Shop\Product\Product;
 use shop\forms\manage\Shop\Product\CategoriesForm;
 use shop\forms\manage\Shop\Product\ProductCreateForm;
+use shop\forms\manage\Shop\Product\PhotosForm;
 use shop\repositories\BrandRepository;
 use shop\repositories\CategoryRepository;
 use shop\repositories\Shop\ProductRepository;
@@ -55,6 +56,11 @@ class ProductManageService
             $product->setValue($value->id, $value->value);
         }
 
+        foreach ($form->photos->files as $file) {
+            $product->addPhoto($file);
+        }
+
+
 
         $this->products->save($product);
 
@@ -73,6 +79,40 @@ class ProductManageService
         }
         $this->products->save($product);
     }
+
+//    Photos
+
+    public function addPhotos($id, PhotosForm $form)
+    {
+        $product = $this->products->get($id);
+        foreach ($form->files as $file) {
+            $product->addPhoto($file);
+        }
+        $this->products->save($product);
+    }
+
+    public function movePhotoUp($id, $photoId)
+    {
+        $product = $this->products->get($id);
+        $product->movePhotoUp($photoId);
+        $this->products->save($product);
+    }
+
+    public function movePhotoDown($id, $photoId)
+    {
+        $product = $this->products->get($id);
+        $product->movePhotoDown($photoId);
+        $this->products->save($product);
+    }
+
+    public function removePhoto($id, $photoId)
+    {
+        $product = $this->products->get($id);
+        $product->removePhoto($photoId);
+        $this->products->save($product);
+    }
+
+//    END PHOTOS
 
     public function remove($id)
     {
