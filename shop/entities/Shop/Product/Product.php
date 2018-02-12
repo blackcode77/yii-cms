@@ -22,16 +22,16 @@ use yii\web\UploadedFile;
  * @property integer $price_new
  * @property integer $rating
  *
- * @property TagAssignment[] $tagAssignments
  * @property Meta $meta
- * @property RelatedAssignment[] $relatedAssignments
  * @property Brand $brand
  * @property Category $category
  * @property CategoryAssignment[] $categoryAssignments
- * @property Value[] $values
+ * @property TagAssignment[] $tagAssignments
+ * @property RelatedAssignment[] $relatedAssignments
  * @property Modification[] $modifications
- * @property Review[] $reviews
+ * @property Value[] $values
  * @property Photo[] $photos
+ * @property Review[] $reviews
  */
 class Product extends ActiveRecord
 {
@@ -40,7 +40,6 @@ class Product extends ActiveRecord
     public static function create($brandId, $categoryId, $code, $name, Meta $meta): self
     {
         $product = new static();
-        $product->brand_id = $brandId;
         $product->brand_id = $brandId;
         $product->category_id = $categoryId;
         $product->code = $code;
@@ -56,12 +55,17 @@ class Product extends ActiveRecord
         $this->price_old = $old;
     }
 
-    public function edit($brandId, $code, $name, Meta $meta): void
+    public function edit($brandId, $code, $name, Meta $meta)
     {
         $this->brand_id = $brandId;
         $this->code = $code;
         $this->name = $name;
         $this->meta = $meta;
+    }
+
+    public function changeMainCategory($categoryId)
+    {
+        $this->category_id = $categoryId;
     }
 
     public function setValue($id, $value)
@@ -88,84 +92,6 @@ class Product extends ActiveRecord
         }
         return Value::blank($id);
     }
-
-    // Reviews
-
-    public function addReview($userId, $vote, $text)
-    {
-        $reviews = $this->reviews;
-        $reviews[] = Review::create($userId, $vote, $text);
-        $this->updateReviews($reviews);
-    }
-
-    public function editReview($id, $vote, $text)
-    {
-        $reviews = $this->reviews;
-        foreach ($reviews as $i => $review) {
-            if ($review->isIdEqualTo($id)) {
-                $review->edit($vote, $text);
-                $this->updateReviews($reviews);
-                return;
-            }
-        }
-        throw new \DomainException('Review is not found.');
-    }
-
-    public function activateReview($id)
-    {
-        $reviews = $this->reviews;
-        foreach ($reviews as $i => $review) {
-            if ($review->isIdEqualTo($id)) {
-                $review->activate();
-                $this->updateReviews($reviews);
-                return;
-            }
-        }
-        throw new \DomainException('Review is not found.');
-    }
-
-    public function draftReview($id)
-    {
-        $reviews = $this->reviews;
-        foreach ($reviews as $i => $review) {
-            if ($review->isIdEqualTo($id)) {
-                $review->draft();
-                $this->updateReviews($reviews);
-                return;
-            }
-        }
-        throw new \DomainException('Review is not found.');
-    }
-
-    public function removeReview($id)
-    {
-        $reviews = $this->reviews;
-        foreach ($reviews as $i => $review) {
-            if ($review->isIdEqualTo($id)) {
-                unset($reviews[$i]);
-                $this->updateReviews($reviews);
-                return;
-            }
-        }
-        throw new \DomainException('Review is not found.');
-    }
-
-    private function updateReviews(array $reviews)
-    {
-        $amount = 0;
-        $total = 0;
-
-        foreach ($reviews as $review) {
-            if ($review->isActive()) {
-                $amount++;
-                $total += $review->getRating();
-            }
-        }
-
-        $this->reviews = $reviews;
-        $this->rating = $amount ? $total / $amount : null;
-    }
-
 
     // Modification
 
@@ -218,11 +144,6 @@ class Product extends ActiveRecord
     }
 
     // Categories
-
-    public function changeMainCategory($categoryId)
-    {
-        $this->category_id = $categoryId;
-    }
 
     public function assignCategory($id)
     {
@@ -284,33 +205,6 @@ class Product extends ActiveRecord
     public function revokeTags()
     {
         $this->tagAssignments = [];
-    }
-
-    // Related products
-
-    public function assignRelatedProduct($id)
-    {
-        $assignments = $this->relatedAssignments;
-        foreach ($assignments as $assignment) {
-            if ($assignment->isForProduct($id)) {
-                return;
-            }
-        }
-        $assignments[] = RelatedAssignment::create($id);
-        $this->relatedAssignments = $assignments;
-    }
-
-    public function revokeRelatedProduct($id)
-    {
-        $assignments = $this->relatedAssignments;
-        foreach ($assignments as $i => $assignment) {
-            if ($assignment->isForProduct($id)) {
-                unset($assignments[$i]);
-                $this->relatedAssignments = $assignments;
-                return;
-            }
-        }
-        throw new \DomainException('Assignment is not found.');
     }
 
     // Photos
@@ -380,6 +274,104 @@ class Product extends ActiveRecord
         $this->photos = $photos;
     }
 
+    // Related products
+
+    public function assignRelatedProduct($id)
+    {
+        $assignments = $this->relatedAssignments;
+        foreach ($assignments as $assignment) {
+            if ($assignment->isForProduct($id)) {
+                return;
+            }
+        }
+        $assignments[] = RelatedAssignment::create($id);
+        $this->relatedAssignments = $assignments;
+    }
+
+    public function revokeRelatedProduct($id)
+    {
+        $assignments = $this->relatedAssignments;
+        foreach ($assignments as $i => $assignment) {
+            if ($assignment->isForProduct($id)) {
+                unset($assignments[$i]);
+                $this->relatedAssignments = $assignments;
+                return;
+            }
+        }
+        throw new \DomainException('Assignment is not found.');
+    }
+
+    // Reviews
+
+    public function addReview($userId, $vote, $text)
+    {
+        $reviews = $this->reviews;
+        $reviews[] = Review::create($userId, $vote, $text);
+        $this->updateReviews($reviews);
+    }
+
+    public function editReview($id, $vote, $text)
+    {
+        $this->doWithReview($id, function (Review $review) use ($vote, $text) {
+            $review->edit($vote, $text);
+        });
+    }
+
+    public function activateReview($id)
+    {
+        $this->doWithReview($id, function (Review $review) {
+            $review->activate();
+        });
+    }
+
+    public function draftReview($id)
+    {
+        $this->doWithReview($id, function (Review $review) {
+            $review->draft();
+        });
+    }
+
+    private function doWithReview($id, callable $callback)
+    {
+        $reviews = $this->reviews;
+        foreach ($reviews as $review) {
+            if ($review->isIdEqualTo($id)) {
+                $callback($review);
+                $this->updateReviews($reviews);
+                return;
+            }
+        }
+        throw new \DomainException('Review is not found.');
+    }
+
+    public function removeReview($id)
+    {
+        $reviews = $this->reviews;
+        foreach ($reviews as $i => $review) {
+            if ($review->isIdEqualTo($id)) {
+                unset($reviews[$i]);
+                $this->updateReviews($reviews);
+                return;
+            }
+        }
+        throw new \DomainException('Review is not found.');
+    }
+
+    private function updateReviews(array $reviews)
+    {
+        $amount = 0;
+        $total = 0;
+
+        foreach ($reviews as $review) {
+            if ($review->isActive()) {
+                $amount++;
+                $total += $review->getRating();
+            }
+        }
+
+        $this->reviews = $reviews;
+        $this->rating = $amount ? $total / $amount : null;
+    }
 
     ##########################
 
@@ -398,6 +390,16 @@ class Product extends ActiveRecord
         return $this->hasMany(CategoryAssignment::class, ['product_id' => 'id']);
     }
 
+    public function getTagAssignments(): ActiveQuery
+    {
+        return $this->hasMany(TagAssignment::class, ['product_id' => 'id']);
+    }
+
+    public function getModifications(): ActiveQuery
+    {
+        return $this->hasMany(Modification::class, ['product_id' => 'id']);
+    }
+
     public function getValues(): ActiveQuery
     {
         return $this->hasMany(Value::class, ['product_id' => 'id']);
@@ -408,19 +410,9 @@ class Product extends ActiveRecord
         return $this->hasMany(Photo::class, ['product_id' => 'id'])->orderBy('sort');
     }
 
-    public function getTagAssignments(): ActiveQuery
-    {
-        return $this->hasMany(TagAssignment::class, ['product_id' => 'id']);
-    }
-
     public function getRelatedAssignments(): ActiveQuery
     {
         return $this->hasMany(RelatedAssignment::class, ['product_id' => 'id']);
-    }
-
-    public function getModifications(): ActiveQuery
-    {
-        return $this->hasMany(Modification::class, ['product_id' => 'id']);
     }
 
     public function getReviews(): ActiveQuery
@@ -441,7 +433,7 @@ class Product extends ActiveRecord
             MetaBehavior::className(),
             [
                 'class' => SaveRelationsBehavior::className(),
-                'relations' => ['categoryAssignments','reviews', 'values', 'photos', 'tagAssignments', 'relatedAssignments', 'modifications'],
+                'relations' => ['categoryAssignments', 'tagAssignments', 'relatedAssignments', 'modifications', 'values', 'photos', 'reviews'],
             ],
         ];
     }
