@@ -6,14 +6,17 @@ use shop\entities\Meta;
 use shop\entities\Shop\Category;
 use shop\forms\manage\Shop\CategoryForm;
 use shop\repositories\Shop\CategoryRepository;
+use shop\repositories\Shop\ProductRepository;
 
 class CategoryManageService
 {
     private $categories;
+    private $products;
 
-    public function __construct(CategoryRepository $categories)
+    public function __construct(CategoryRepository $categories, ProductRepository $products)
     {
         $this->categories = $categories;
+        $this->products = $products;
     }
 
     public function create(CategoryForm $form): Category
@@ -35,7 +38,7 @@ class CategoryManageService
         return $category;
     }
 
-    public function edit($id, CategoryForm $form)
+    public function edit($id, CategoryForm $form): void
     {
         $category = $this->categories->get($id);
         $this->assertIsNotRoot($category);
@@ -57,14 +60,17 @@ class CategoryManageService
         $this->categories->save($category);
     }
 
-    public function remove($id)
+    public function remove($id): void
     {
         $category = $this->categories->get($id);
         $this->assertIsNotRoot($category);
+        if ($this->products->existsByMainCategory($category->id)) {
+            throw new \DomainException('Unable to remove category with products.');
+        }
         $this->categories->remove($category);
     }
 
-    private function assertIsNotRoot(Category $category)
+    private function assertIsNotRoot(Category $category): void
     {
         if ($category->isRoot()) {
             throw new \DomainException('Unable to manage the root category.');
