@@ -39,7 +39,7 @@ class ProductManageService
         $this->transaction = $transaction;
     }
 
-    public function edit($id, ProductEditForm $form): void
+    public function edit($id, ProductEditForm $form)
     {
         $product = $this->products->get($id);
         $brand = $this->brands->get($form->brandId);

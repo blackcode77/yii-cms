@@ -15,14 +15,14 @@ class ProductRepository
         return $product;
     }
 
-    public function save(Product $product): void
+    public function save(Product $product)
     {
         if (!$product->save()) {
             throw new \RuntimeException('Saving error.');
         }
     }
 
-    public function remove(Product $product): void
+    public function remove(Product $product)
     {
         if (!$product->delete()) {
             throw new \RuntimeException('Removing error.');

@@ -29,7 +29,7 @@ class CharacteristicManageService
         return $characteristic;
     }
 
-    public function edit($id, CharacteristicForm $form): void
+    public function edit($id, CharacteristicForm $form)
     {
         $characteristic = $this->characteristics->get($id);
         $characteristic->edit(
@@ -43,7 +43,7 @@ class CharacteristicManageService
         $this->characteristics->save($characteristic);
     }
 
-    public function remove($id): void
+    public function remove($id)
     {
         $characteristic = $this->characteristics->get($id);
         $this->characteristics->remove($characteristic);

@@ -21,7 +21,7 @@ class Modification extends ActiveRecord
         return $modification;
     }
 
-    public function edit($code, $name, $price): void
+    public function edit($code, $name, $price)
     {
         $this->code = $code;
         $this->name = $name;

@@ -25,7 +25,7 @@ class Value extends ActiveRecord
         return $object;
     }
 
-    public function change($value): void
+    public function change($value)
     {
         $this->value = $value;
     }

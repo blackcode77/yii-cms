@@ -15,14 +15,14 @@ class CharacteristicRepository
         return $characteristic;
     }
 
-    public function save(Characteristic $characteristic): void
+    public function save(Characteristic $characteristic)
     {
         if (!$characteristic->save()) {
             throw new \RuntimeException('Saving error.');
         }
     }
 
-    public function remove(Characteristic $characteristic): void
+    public function remove(Characteristic $characteristic)
     {
         if (!$characteristic->delete()) {
             throw new \RuntimeException('Removing error.');

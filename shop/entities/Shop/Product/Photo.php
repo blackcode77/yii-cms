@@ -19,7 +19,7 @@ class Photo extends ActiveRecord
         return $photo;
     }
 
-    public function setSort($sort): void
+    public function setSort($sort)
     {
         $this->sort = $sort;
     }
