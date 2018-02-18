@@ -76,4 +76,24 @@ class CategoryManageService
             throw new \DomainException('Unable to manage the root category.');
         }
     }
+
+    public function moveUp($id): void
+    {
+        $category = $this->categories->get($id);
+        $this->assertIsNotRoot($category);
+        if ($prev = $category->prev) {
+            $category->insertBefore($prev);
+        }
+        $this->categories->save($category);
+    }
+
+    public function moveDown($id): void
+    {
+        $category = $this->categories->get($id);
+        $this->assertIsNotRoot($category);
+        if ($next = $category->next) {
+            $category->insertAfter($next);
+        }
+        $this->categories->save($category);
+    }
 }
